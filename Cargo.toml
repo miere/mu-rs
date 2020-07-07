@@ -1,0 +1,17 @@
+[package]
+name = "lambda_runtime_rest"
+version = "0.1.0"
+authors = ["Miere Teixeira <miere@securecodewarrior.com>"]
+edition = "2018"
+
+[lib]
+
+[dependencies]
+aws_lambda_events = "0.3.0"
+serde = "1.0"
+serde_json = "1.0"
+
+# This dependency is still in pre-release, thus it's fixed into an stable version.
+[dependencies.lambda]
+git = "https://github.com/awslabs/aws-lambda-rust-runtime/"
+rev = "c8dbcd39e0b1cf9ecf395e2b2f9df6c6c0d97780"
