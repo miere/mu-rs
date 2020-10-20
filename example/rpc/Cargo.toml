@@ -1,0 +1,25 @@
+[package]
+name = "rpc"
+version = "0.1.0"
+authors = ["Miere Teixeira <miere@securecodewarrior.com>"]
+edition = "2018"
+
+[[bin]]
+name = "lambda_user_create"
+path = "src/lambda_user_create.rs"
+
+[[bin]]
+name = "lambda_user_retrieve"
+path = "src/lambda_user_retrieve.rs"
+
+[dependencies]
+tokio = "0.2"
+serde = "1.0"
+serde_json = "1.0"
+thiserror = "1.0"
+
+rusoto_core = "0.45.0"
+rusoto_dynamodb = "0.45.0"
+
+[dependencies.lambda_runtime_ext]
+path = "../../"
