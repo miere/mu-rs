@@ -8,7 +8,7 @@ use crate::lambda::LambdaError;
 use crate::alb::Serialize;
 use crate::alb::Deserialize;
 
-pub async fn initialize<F, Fut, A, B, C>(handler: F) -> lambda::RuntimeResult
+pub async fn initialize<F, Fut, A, B>(handler: F) -> lambda::RuntimeResult
     where
         F: Fn(A) -> Fut + Sync + Send,
         Fut: Future<Output = B> + Send,
