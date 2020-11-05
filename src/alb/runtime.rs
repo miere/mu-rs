@@ -1,12 +1,9 @@
 use std::future::Future;
 
-use aws_lambda_events::event::alb::{AlbTargetGroupRequest, AlbTargetGroupResponse};
-
 use crate::alb;
 use crate::lambda;
 use crate::lambda::LambdaError;
-use crate::alb::Serialize;
-use crate::alb::Deserialize;
+use crate::alb::*;
 
 pub async fn initialize<F, Fut, A, B>(handler: F) -> lambda::RuntimeResult
     where
@@ -15,14 +12,14 @@ pub async fn initialize<F, Fut, A, B>(handler: F) -> lambda::RuntimeResult
         A: Deserialize<A> + Send,
         B: Serialize
 {
-    lambda::initialize(|req: AlbTargetGroupRequest, ctx: lambda::Context| {
+    lambda::initialize(|req: Request, ctx: lambda::Context| {
         handle_rpc_req(&handler, req, ctx)
     }).await
 }
 
 /// Handle the RPC request.
-async fn handle_rpc_req<F, Fut, A, B>(func: &F, req: AlbTargetGroupRequest, ctx: lambda::Context)
-    -> Result<AlbTargetGroupResponse, LambdaError>
+async fn handle_rpc_req<F, Fut, A, B>(func: &F, req: Request, ctx: lambda::Context)
+    -> Result<Response, LambdaError>
     where
         F: Fn(A) -> Fut + Sync + Send,
         Fut: Future<Output = B> + Send,
