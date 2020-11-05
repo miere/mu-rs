@@ -27,5 +27,6 @@
 //!
 
 // Modules
+#[cfg(feature = "alb")]
 pub mod alb;
 pub mod lambda;

@@ -6,6 +6,10 @@ edition = "2018"
 
 [lib]
 
+[features]
+default = ["alb"]
+alb = []
+
 [dependencies]
 aws_lambda_events = "0.3"
 serde = "1.0"
