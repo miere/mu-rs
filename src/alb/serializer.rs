@@ -1,25 +1,25 @@
-use aws_lambda_events::event::alb::AlbTargetGroupResponse;
 use serde::Serialize;
 
+use crate::alb;
 use crate::alb::response;
 use crate::lambda::LambdaError;
 
 /// Serialize ordinary structures and enums into an ALB valid response.
 pub trait AlbSerialize {
-    fn to_alb_response(&self) -> AlbTargetGroupResponse;
+    fn to_alb_response(&self) -> alb::Response;
 }
 
 // Converts structures and enums marked with Serialize into a valid ALB response.
 impl<T> AlbSerialize for T
     where T: Serialize
 {
-    fn to_alb_response(&self) -> AlbTargetGroupResponse {
+    fn to_alb_response(&self) -> alb::Response {
         response::create_json_from_obj(200, self)
     }
 }
 
 impl AlbSerialize for LambdaError {
-    fn to_alb_response(&self) -> AlbTargetGroupResponse {
+    fn to_alb_response(&self) -> alb::Response {
         let body = format!("{}", self);
         response::create_plain_text(500, Some(body))
     }
