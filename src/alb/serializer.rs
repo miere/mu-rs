@@ -1,20 +1,16 @@
-use serde::Serialize;
-
 use crate::alb;
 use crate::alb::response;
 use crate::lambda::LambdaError;
+use aws_lambda_events::event::alb::AlbTargetGroupResponse;
 
 /// Serialize ordinary structures and enums into an ALB valid response.
 pub trait AlbSerialize {
     fn to_alb_response(&self) -> alb::Response;
 }
 
-// Converts structures and enums marked with Serialize into a valid ALB response.
-impl<T> AlbSerialize for T
-    where T: Serialize
-{
-    fn to_alb_response(&self) -> alb::Response {
-        response::create_json_from_obj(200, self)
+impl AlbSerialize for alb::Response {
+    fn to_alb_response(&self) -> AlbTargetGroupResponse {
+        self.clone()
     }
 }
 
@@ -26,9 +22,17 @@ impl AlbSerialize for LambdaError {
 }
 
 #[cfg(test)]
-mod handled_response_tests {
+mod custom_serializer_tests {
     use super::*;
     use crate::alb::response::*;
+    use serde::Serialize;
+
+    impl AlbSerialize for User
+    {
+        fn to_alb_response(&self) -> alb::Response {
+            response::create_json_from_obj(200, self)
+        }
+    }
 
     #[derive(Serialize)]
     struct User {
@@ -36,7 +40,7 @@ mod handled_response_tests {
     }
 
     #[test]
-    fn should_convert_serializable_into_response() {
+    fn should_convert_into_alb_response() {
         let serializable = User { name: String::from("John") };
 
         let response = serializable.to_alb_response();
