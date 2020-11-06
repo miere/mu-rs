@@ -84,7 +84,7 @@ pub async fn listen_events<F, Fut, A, B, E>(handler: F) -> RuntimeResult
     let wrapped = lambda::handler_fn(handler);
     let result = lambda::run(wrapped).await;
     match result {
-        Ok(empty) => Ok(empty),
+        Ok(_) => Ok(()),
         Err(cause) => Err(LambdaError(
             format!("Lambda unexpectedly finished: {:?}", cause)
         ))
