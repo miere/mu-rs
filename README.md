@@ -24,7 +24,7 @@ to crates.io yet, you need to use Git reference to set up a project using μ-rs.
 ```toml
 [dependencies.mu]
 git = "https://github.com/miere/mu-rs"
-branch = "0.1.0"
+tag = "0.1.0"
 ```
 
 ## Documentation
