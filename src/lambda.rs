@@ -3,8 +3,8 @@
 pub use lambda::{Context, Handler};
 
 use serde::{Deserialize, Serialize};
-use std::fmt::{Debug, Display, Formatter, Result as FormatterResult};
 use std::error::Error as StdError;
+use std::fmt::{Debug, Display, Formatter, Result as FormatterResult};
 use std::future::Future;
 
 /// A custom result type that assumes __LambdaError__ as error type.
@@ -24,7 +24,6 @@ pub type RuntimeResult = Result<(), LambdaError>;
 pub struct LambdaError(String);
 
 impl LambdaError {
-
     pub fn new(msg: &str) -> LambdaError {
         LambdaError(msg.to_string())
     }
@@ -74,19 +73,20 @@ impl Display for LambdaError {
 /// }
 /// ```
 pub async fn listen_events<F, Fut, A, B, E>(handler: F) -> RuntimeResult
-    where
-        F: Fn(A, Context) -> Fut + Sync + Send,
-        Fut: Future<Output = Result<B, E>> + Send,
-        A: for<'de> Deserialize<'de> + Send,
-        B: Serialize,
-        E: Debug + StdError
+where
+    F: Fn(A, Context) -> Fut + Sync + Send,
+    Fut: Future<Output = Result<B, E>> + Send,
+    A: for<'de> Deserialize<'de> + Send,
+    B: Serialize,
+    E: Debug + StdError,
 {
     let wrapped = lambda::handler_fn(handler);
     let result = lambda::run(wrapped).await;
     match result {
         Ok(_) => Ok(()),
-        Err(cause) => Err(LambdaError(
-            format!("Lambda unexpectedly finished: {:?}", cause)
-        ))
+        Err(cause) => Err(LambdaError(format!(
+            "Lambda unexpectedly finished: {:?}",
+            cause
+        ))),
     }
 }

@@ -27,8 +27,7 @@ mod custom_serializer_tests {
     use crate::alb::response::*;
     use serde::Serialize;
 
-    impl AlbSerialize for User
-    {
+    impl AlbSerialize for User {
         fn to_alb_response(&self) -> alb::Response {
             response::create_json_from_obj(200, self)
         }
@@ -36,12 +35,14 @@ mod custom_serializer_tests {
 
     #[derive(Serialize)]
     struct User {
-        name: String
+        name: String,
     }
 
     #[test]
     fn should_convert_into_alb_response() {
-        let serializable = User { name: String::from("John") };
+        let serializable = User {
+            name: String::from("John"),
+        };
 
         let response = serializable.to_alb_response();
         assert_eq!(response.status_code, 200);
@@ -49,8 +50,9 @@ mod custom_serializer_tests {
 
         let header = response.multi_value_headers.get(headers::CONTENT_TYPE);
         assert_ne!(None, header);
-        assert_eq!(&content_types::JSON.to_string(), header.unwrap().get(0).unwrap());
+        assert_eq!(
+            &content_types::JSON.to_string(),
+            header.unwrap().get(0).unwrap()
+        );
     }
 }
-
-
