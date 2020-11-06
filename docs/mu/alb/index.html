@@ -1,0 +1,93 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `alb` mod in crate `mu`."><meta name="keywords" content="rust, rustlang, rust-lang, alb"><title>mu::alb - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../mu/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a><p class='location'>Module alb</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li></ul></div><p class='location'><a href='../index.html'>mu</a></p><script>window.sidebarCurrent = {name: 'alb', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../src/mu/alb/mod.rs.html#1-111' title='goto source code'>[src]</a></span><span class='in-band'>Module <a href='../index.html'>mu</a>::<wbr><a class="mod" href=''>alb</a></span></h1><div class='docblock'><p>An AWS Application Load Balancer abstraction to handle Http requests with AWS Lambda.
+Being designed with correctness and robustness in mind, it covers more complex scenarios
+by default - like Http Error handling and customizable serialization mechanism.</p>
+<p>Let's say hello world?</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">mu</span>::{<span class="ident">alb</span>, <span class="ident">lambda</span>};
+
+<span class="attribute">#[<span class="ident">tokio</span>::<span class="ident">main</span>]</span>
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">main</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">lambda</span>::<span class="ident">RuntimeResult</span> {
+  <span class="ident">alb</span>::<span class="ident">listen_events</span>(<span class="op">|</span><span class="ident">req</span>: <span class="ident">alb</span>::<span class="ident">Request</span><span class="op">|</span> <span class="ident">say_hello</span>()).<span class="kw">await</span>
+}
+
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">say_hello</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">alb</span>::<span class="ident">Response</span> {
+  <span class="ident">alb</span>::<span class="ident">response</span>::<span class="ident">create_plain_text</span>(<span class="number">200</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;Hello, mate&quot;</span>.<span class="ident">to_string</span>()))
+}</pre></div>
+<h2 id="centralised-serialization-mechanism" class="section-header"><a href="#centralised-serialization-mechanism">Centralised Serialization Mechanism</a></h2>
+<p>One of the common questions raised when designing a serverless application is how to have
+a consistent response serialization that can shared across different lambda functions. This
+is especially true when developing HTTP endpoints, where you might have different successful
+response types, but shared error types.</p>
+<p>By creating your own <code>mu::alb::Serialize</code> implementation, as below exemplified, you can
+globally define how a given object will be sent as a response to the AWS Application Load Balancer.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">mu</span>::<span class="ident">alb</span>;
+<span class="kw">use</span> <span class="ident">serde</span>::<span class="ident">Serialize</span>;
+
+<span class="kw">enum</span> <span class="ident">MyResponses</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="ident">Success</span>(<span class="ident">T</span>),
+    <span class="ident">NoContent</span>,
+    <span class="ident">BadRequest</span>
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">alb</span>::<span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">MyResponses</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
+    <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Serialize</span> {
+
+    <span class="kw">fn</span> <span class="ident">to_alb_response</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">alb</span>::<span class="ident">Response</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">MyResponses</span>::<span class="ident">Success</span>(<span class="ident">msg</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">alb</span>::<span class="ident">response</span>::<span class="ident">create_json_from_obj</span>(<span class="number">200</span>, <span class="ident">msg</span>),
+            <span class="ident">MyResponses</span>::<span class="ident">NoContent</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">alb</span>::<span class="ident">response</span>::<span class="ident">create_plain_text</span>(<span class="number">204</span>, <span class="prelude-val">None</span>),
+            <span class="ident">MyResponses</span>::<span class="ident">BadRequest</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">alb</span>::<span class="ident">response</span>::<span class="ident">create_plain_text</span>(<span class="number">400</span>, <span class="prelude-val">None</span>)
+        }
+    }
+}</pre></div>
+<h2 id="custom-request-deserialization" class="section-header"><a href="#custom-request-deserialization">Custom Request Deserialization</a></h2>
+<p>It is also possible to replace the <strong>mu::alb::Request</strong> type by our custom type in the listener
+function, significantly reducing the size of your Lambda functions, mimicking the RPC request-style.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">mu</span>::{<span class="ident">alb</span>, <span class="ident">lambda</span>};
+
+<span class="kw">struct</span> <span class="ident">EmptyPayload</span> {}
+
+<span class="kw">impl</span> <span class="ident">alb</span>::<span class="ident">Deserialize</span><span class="op">&lt;</span><span class="ident">EmptyPayload</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">EmptyPayload</span> {
+    <span class="kw">fn</span> <span class="ident">from_alb_request</span>(<span class="ident">req</span>: <span class="ident">alb</span>::<span class="ident">Request</span>, <span class="ident">ctx</span>: <span class="ident">lambda</span>::<span class="ident">Context</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">EmptyPayload</span>, <span class="ident">lambda</span>::<span class="ident">LambdaError</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="ident">req</span>.<span class="ident">body</span> {
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">EmptyPayload</span> {}),
+            <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Unexpected payload&quot;</span>.<span class="ident">into</span>())
+        }
+    }
+}</pre></div>
+<p>Certainly, implementing <strong>mu::alb::Deserialize</strong> for several structs might become a burden when
+the software gets bigger. If the structs derives <strong>serde::Deserialize</strong>, though, the number of
+lines of code required to create a deserializer can be significantly reduced.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">mu</span>::{<span class="ident">alb</span>, <span class="ident">lambda</span>};
+<span class="kw">use</span> <span class="ident">serde</span>::<span class="ident">Deserialize</span>;
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>)]</span>
+<span class="kw">struct</span> <span class="ident">EmptyPayload</span> {}
+
+<span class="kw">impl</span> <span class="ident">alb</span>::<span class="ident">RpcRequest</span> <span class="kw">for</span> <span class="ident">EmptyPayload</span> {}
+
+<span class="attribute">#[<span class="ident">tokio</span>::<span class="ident">main</span>]</span>
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">main</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">lambda</span>::<span class="ident">RuntimeResult</span> {
+  <span class="ident">alb</span>::<span class="ident">listen_events</span>(<span class="op">|</span><span class="ident">empty</span>: <span class="ident">EmptyPayload</span><span class="op">|</span>
+    <span class="ident">say_hello</span>()
+  ).<span class="kw">await</span>
+}
+
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">say_hello</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">alb</span>::<span class="ident">Response</span> {
+  <span class="ident">alb</span>::<span class="ident">response</span>::<span class="ident">create_plain_text</span>(<span class="number">200</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;Hello, mate&quot;</span>.<span class="ident">to_string</span>()))
+}</pre></div>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
+<table><tr><td><code>pub use crate::alb::serializer::<a class="trait" href="../../mu/alb/serializer/trait.AlbSerialize.html" title="trait mu::alb::serializer::AlbSerialize">AlbSerialize</a> as Serialize;</code></td></tr><tr><td><code>pub use crate::alb::deserializer::<a class="trait" href="../../mu/alb/deserializer/trait.AlbDeserialize.html" title="trait mu::alb::deserializer::AlbDeserialize">AlbDeserialize</a> as Deserialize;</code></td></tr><tr><td><code>pub use crate::alb::deserializer::<a class="trait" href="../../mu/alb/deserializer/trait.RpcRequest.html" title="trait mu::alb::deserializer::RpcRequest">RpcRequest</a>;</code></td></tr><tr><td><code>pub use crate::alb::runtime::<a class="fn" href="../../mu/alb/runtime/fn.listen_events.html" title="fn mu::alb::runtime::listen_events">listen_events</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table><tr class='module-item'><td><a class="mod" href="deserializer/index.html" title='mu::alb::deserializer mod'>deserializer</a></td><td class='docblock-short'></td></tr><tr class='module-item'><td><a class="mod" href="response/index.html" title='mu::alb::response mod'>response</a></td><td class='docblock-short'></td></tr><tr class='module-item'><td><a class="mod" href="runtime/index.html" title='mu::alb::runtime mod'>runtime</a></td><td class='docblock-short'></td></tr><tr class='module-item'><td><a class="mod" href="serializer/index.html" title='mu::alb::serializer mod'>serializer</a></td><td class='docblock-short'></td></tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table><tr class='module-item'><td><a class="struct" href="struct.ElbContext.html" title='mu::alb::ElbContext struct'>ElbContext</a></td><td class='docblock-short'><p><code>ElbContext</code> contains the information to identify the ARN invoking the lambda</p>
+</td></tr><tr class='module-item'><td><a class="struct" href="struct.Request.html" title='mu::alb::Request struct'>Request</a></td><td class='docblock-short'><p><code>AlbTargetGroupRequest</code> contains data originating from the ALB Lambda target group integration</p>
+</td></tr><tr class='module-item'><td><a class="struct" href="struct.RequestContext.html" title='mu::alb::RequestContext struct'>RequestContext</a></td><td class='docblock-short'><p><code>AlbTargetGroupRequestContext</code> contains the information to identify the load balancer invoking the lambda</p>
+</td></tr><tr class='module-item'><td><a class="struct" href="struct.Response.html" title='mu::alb::Response struct'>Response</a></td><td class='docblock-short'><p><code>AlbTargetGroupResponse</code> configures the response to be returned by the ALB Lambda target group for the request</p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "mu";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>

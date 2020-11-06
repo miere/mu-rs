@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["CONTENT_TYPE",""],["LOCATION",""]],"fn":[["create_for","Creates a single entry header for the given header_name and value arguments."],["create_for_optional","Creates a single entry header for the given header_name and the optional value arguments."]],"type":[["Map",""]]});
