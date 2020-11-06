@@ -28,7 +28,7 @@ branch = "0.1.0"
 ```
 
 ## Documentation
-`TODO`
+- [Crate documentation](https://miere.github.io/mu-rs/)
 
 ## Reporting Bugs/Feature Requests
 We welcome you to use the GitHub issue tracker to report bugs or suggest features.
