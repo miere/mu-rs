@@ -18,7 +18,7 @@ async-trait = "0.1"
 lazy_static = "1.4.0"
 
 [dev-dependencies]
-tokio = "0.3"
+tokio = { version = "0.3", features = ["full"] }
 
 # This dependency is still in pre-release, thus it's fixed into an stable version.
 [dependencies.lambda]

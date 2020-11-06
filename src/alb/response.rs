@@ -2,17 +2,13 @@ use std::collections::HashMap;
 use serde::Serialize;
 use crate::alb;
 
-pub mod headers {
-    pub const CONTENT_TYPE: &str = "Content-Type";
-    pub const LOCATION: &str = "Content-Type";
-}
-
+/// Known content types.
 pub mod content_types {
     pub const JSON: &str = "application/json";
     pub const PLAIN_TEXT: &str = "text/plain";
 }
 
-/// Creates an ALB-compatible response from an optional Serde-Serializable object.
+/// Creates an ALB-compatible response wrapping an optional Serde-Serializable object as Json.
 pub fn create_json_from_optional<T: Serialize>(status: i64, optional: &Option<T>) -> alb::Response {
     match optional {
         Some(object) => create_json_from_obj(status, &object),
@@ -20,7 +16,7 @@ pub fn create_json_from_optional<T: Serialize>(status: i64, optional: &Option<T>
     }
 }
 
-/// Creates an ALB-compatible response from a Serde-Serializable object.
+/// Creates an ALB-compatible response wrapping a Serde-Serializable object as Json.
 pub fn create_json_from_obj<T: Serialize>(status: i64, object: &T) -> alb::Response {
     match serde_json::to_string(object) {
         Ok(serialized) => create_json(
@@ -32,19 +28,21 @@ pub fn create_json_from_obj<T: Serialize>(status: i64, object: &T) -> alb::Respo
     }
 }
 
-/// Creates an ALB-compatible response wrapping a JSON object.
+/// Creates an ALB-compatible response wrapping an optional object as JSON.
 pub fn create_json(status_code: i64, body: Option<String>) -> alb::Response {
     create_with_content_type(
         status_code, body, content_types::JSON.to_string()
     )
 }
 
+/// Creates an ALB-compatible response wrapping an optional String.
 pub fn create_plain_text(status_code: i64, body: Option<String>) -> alb::Response {
     create_with_content_type(
         status_code, body, content_types::PLAIN_TEXT.to_string()
     )
 }
 
+///
 pub fn create_with_content_type(
     status_code: i64,
     body: Option<String>,
@@ -52,32 +50,50 @@ pub fn create_with_content_type(
 ) -> alb::Response {
     create(
         status_code, body,
-        create_header_for(headers::CONTENT_TYPE, &content_type)
+        headers::create_for(headers::CONTENT_TYPE, &content_type)
     )
 }
 
-pub fn create_optional_header_for(header_name: &str, optional_value: &Option<String>) -> HashMap<String, String> {
-    match optional_value {
-        Some(value) => create_header_for(header_name, &value),
-        None => Default::default()
-    }
-}
-
-pub fn create_header_for(header_name: &str, value: &str) -> HashMap<String, String> {
-    let mut headers = HashMap::new();
-    headers.insert(header_name.to_string(), value.to_string());
-    headers
-}
-
+/// Creates a normalised __mu::alb::Response__, taking care of a few details
+/// that might lead to 502 errors on the Application Load Balancer.
 pub fn create(
     status_code: i64,
     body: Option<String>,
-    headers: HashMap<String, String>
+    multi_value_headers: headers::Map
 ) -> alb::Response {
     alb::Response {
-        status_code, body, headers,
+        status_code, multi_value_headers,
+        headers: HashMap::new(),
         is_base64_encoded: false,
-        status_description: None,
-        multi_value_headers: Default::default()
+        status_description: Some(format!("{} Response", status_code)),
+        body: match body {
+            None => Some("".to_string()),
+            _ => body
+        }
+    }
+}
+
+pub mod headers {
+    use std::collections::HashMap;
+
+    pub type Map = HashMap<String, Vec<String>>;
+
+    pub const CONTENT_TYPE: &str = "Content-Type";
+    pub const LOCATION: &str = "Content-Type";
+
+    /// Creates a single entry header for the given __header_name__ and the optional __value__ arguments.
+    pub fn create_for_optional(header_name: &str, optional_value: &Option<String>) -> Map {
+        match optional_value {
+            Some(value) => create_for(header_name, &value),
+            None => Default::default()
+        }
+    }
+
+    /// Creates a single entry header for the given __header_name__ and __value__ arguments.
+    pub fn create_for(header_name: &str, value: &str) -> Map {
+        let values = vec!(value.to_string());
+        let mut headers = HashMap::new();
+        headers.insert(header_name.to_string(), values);
+        headers
     }
 }

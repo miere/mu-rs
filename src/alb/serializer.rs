@@ -47,9 +47,9 @@ mod custom_serializer_tests {
         assert_eq!(response.status_code, 200);
         assert_eq!(response.body.unwrap(), "{\"name\":\"John\"}".to_string());
 
-        let header = response.headers.get(headers::CONTENT_TYPE);
+        let header = response.multi_value_headers.get(headers::CONTENT_TYPE);
         assert_ne!(None, header);
-        assert_eq!(Some(&content_types::JSON.to_string()), header);
+        assert_eq!(&content_types::JSON.to_string(), header.unwrap().get(0).unwrap());
     }
 }
 
