@@ -1,7 +1,10 @@
+use aws_lambda_events::event::alb::AlbTargetGroupResponse;
+use serde::export::fmt::Debug;
+use serde::Serialize;
+
 use crate::alb;
 use crate::alb::response;
 use crate::lambda::LambdaError;
-use aws_lambda_events::event::alb::AlbTargetGroupResponse;
 
 /// Serialize ordinary structures and enums into an ALB valid response.
 pub trait AlbSerialize {
@@ -21,11 +24,29 @@ impl AlbSerialize for LambdaError {
     }
 }
 
+impl<T, E> AlbSerialize for Result<T, E>
+where
+    T: Serialize,
+    E: Debug,
+{
+    fn to_alb_response(&self) -> AlbTargetGroupResponse {
+        match self {
+            Ok(response) => alb::response::create_json_from_obj(200, response),
+            Err(cause) => alb::response::create_plain_text(
+                500,
+                Some(format!("Internal Server Error: {:?}", cause)),
+            ),
+        }
+    }
+}
+
 #[cfg(test)]
 mod custom_serializer_tests {
-    use super::*;
-    use crate::alb::response::*;
     use serde::Serialize;
+
+    use crate::alb::response::*;
+
+    use super::*;
 
     impl AlbSerialize for User {
         fn to_alb_response(&self) -> alb::Response {
@@ -53,6 +74,34 @@ mod custom_serializer_tests {
         assert_eq!(
             &content_types::JSON.to_string(),
             header.unwrap().get(0).unwrap()
+        );
+    }
+}
+
+#[cfg(test)]
+mod result_object_serialization_tests {
+    use crate::lambda::RuntimeResult;
+
+    use super::*;
+
+    #[test]
+    fn should_serialize_successful_result() {
+        let res: RuntimeResult = Ok(());
+
+        let response = res.to_alb_response();
+        assert_eq!(200, response.status_code);
+        assert_eq!("null", response.body.unwrap());
+    }
+
+    #[test]
+    fn should_serialize_failure_result() {
+        let res: RuntimeResult = Err("Unit Test".into());
+
+        let response = res.to_alb_response();
+        assert_eq!(500, response.status_code);
+        assert_eq!(
+            "Internal Server Error: LambdaError(\"Unit Test\")",
+            response.body.unwrap()
         );
     }
 }
