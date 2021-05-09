@@ -1,27 +1,30 @@
-use crate::alb;
-use crate::lambda;
-use crate::lambda::LambdaError;
+use aws_lambda_events::event::alb::{
+    AlbTargetGroupRequest as Request
+};
+
+use mu_runtime::Context;
+use mu_runtime::Error;
 
 pub trait AlbDeserialize<T> {
-    fn from_alb_request(req: alb::Request, ctx: lambda::Context) -> Result<T, LambdaError>;
+    fn from_alb_request(req: Request, ctx: Context) -> Result<T, Error>;
 }
 
-impl AlbDeserialize<alb::Request> for alb::Request {
+impl AlbDeserialize<Request> for Request {
     fn from_alb_request(
-        req: alb::Request,
-        _: lambda::Context,
-    ) -> Result<alb::Request, LambdaError> {
+        req: Request,
+        _: Context,
+    ) -> Result<Request, Error> {
         Ok(req)
     }
 }
 
 pub trait RpcRequest {}
 
-impl<T> alb::Deserialize<T> for T
+impl<T> AlbDeserialize<T> for T
 where
     T: for<'de> serde::Deserialize<'de> + RpcRequest,
 {
-    fn from_alb_request(req: alb::Request, _ctx: lambda::Context) -> Result<T, LambdaError> {
+    fn from_alb_request(req: Request, _ctx: Context) -> Result<T, Error> {
         match &req.body {
             Some(body) => match serde_json::from_str(body) {
                 Ok(deserialized) => Ok(deserialized),

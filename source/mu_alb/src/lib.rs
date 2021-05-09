@@ -4,15 +4,16 @@
 //!
 //! Let's say hello world?
 //! ```no_run
-//! use mu::{alb, lambda};
+//! use aws_lambda_events::event::alb::AlbTargetGroupRequest;
+//! use mu_alb::*;
 //!
 //! #[tokio::main]
-//! async fn main() -> lambda::RuntimeResult {
-//!   alb::listen_events(|req: alb::Request| say_hello()).await
+//! async fn main() -> RuntimeResult {
+//!   listen_events(|req: AlbTargetGroupRequest| say_hello()).await
 //! }
 //!
 //! async fn say_hello() -> alb::Response {
-//!   alb::response::create_plain_text(200, Some("Hello, mate".to_string()))
+//!   response::create_plain_text(200, Some("Hello, mate".to_string()))
 //! }
 //! ```
 //!
@@ -26,7 +27,7 @@
 //! globally define how a given object will be sent as a response to the AWS Application Load Balancer.
 //!
 //! ```no_run
-//! use mu::alb;
+//! use mu_alb::*;
 //! use serde::Serialize;
 //!
 //! enum MyResponses<T> {
@@ -49,16 +50,18 @@
 //! ```
 //!
 //! ## Custom Request Deserialization
-//! It is also possible to replace the __mu::alb::Request__ type by our custom type in the listener
-//! function, significantly reducing the size of your Lambda functions, mimicking the RPC request-style.
+//! It is also possible to replace the [aws_lambda_events::event::alb::AlbTargetGroupRequest] type
+//! by our custom type in the listener function, it might be convenient for desiging RPC
+//! request-style APIs.
 //!
 //! ```no_run
-//! use mu::{alb, lambda};
+//! use aws_lambda_events::event::alb::AlbTargetGroupRequest;
+//! use mu_alb::*;
 //!
 //! struct EmptyPayload {}
 //!
-//! impl alb::Deserialize<EmptyPayload> for EmptyPayload {
-//!     fn from_alb_request(req: alb::Request, ctx: lambda::Context) -> Result<EmptyPayload, lambda::LambdaError> {
+//! impl AlbDeserialize<EmptyPayload> for EmptyPayload {
+//!     fn from_alb_request(req: AlbTargetGroupRequest, ctx: lambda::Context) -> Result<EmptyPayload, Error> {
 //!         match req.body {
 //!             None => Ok(EmptyPayload {}),
 //!             Some(_) => Err("Unexpected payload".into())
@@ -66,44 +69,37 @@
 //!     }
 //! }
 //! ```
-//! Certainly, implementing __mu::alb::Deserialize__ for several structs might become a burden when
-//! the software gets bigger. If the structs derives __serde::Deserialize__, though, the number of
-//! lines of code required to create a deserializer can be significantly reduced.
+//! On a much more complex event, one might need to deserialize the received Payload and transform
+//! that into the desired entity. If you're using Serde, though, things might be further simplied.
 //!
 //! ```no_run
-//! use mu::{alb, lambda};
+//! use mu_alb::*;
 //! use serde::Deserialize;
 //!
 //! #[derive(Deserialize)]
 //! struct EmptyPayload {}
 //!
-//! impl alb::RpcRequest for EmptyPayload {}
-//!
-//! #[tokio::main]
-//! async fn main() -> lambda::RuntimeResult {
-//!   alb::listen_events(|empty: EmptyPayload|
-//!     say_hello()
-//!   ).await
-//! }
-//!
-//! async fn say_hello() -> alb::Response {
-//!   alb::response::create_plain_text(200, Some("Hello, mate".to_string()))
-//! }
+//! // TODO: turn this into a derive macro
+//! impl RpcRequest for EmptyPayload {}
 //! ```
 
+// Internal modules are public, so people can use it whenever it makes sense.
 pub mod deserializer;
 pub mod response;
 pub mod runtime;
 pub mod serializer;
 
 // Stable, long-term API
-
-pub use aws_lambda_events::event::alb::{
-    AlbTargetGroupRequest as Request, AlbTargetGroupRequestContext as RequestContext,
-    AlbTargetGroupResponse as Response, ElbContext,
+pub use crate::{
+    deserializer::AlbDeserialize,
+    deserializer::RpcRequest,
+    runtime::listen_events,
+    serializer::AlbSerialize,
 };
 
-pub use crate::alb::deserializer::AlbDeserialize as Deserialize;
-pub use crate::alb::deserializer::RpcRequest;
-pub use crate::alb::runtime::listen_events;
-pub use crate::alb::serializer::AlbSerialize as Serialize;
+// Re-exporting a few entries from mu_runtime, for convenience.
+pub use mu_runtime::{
+    Error,
+    RuntimeResult,
+    Context,
+};

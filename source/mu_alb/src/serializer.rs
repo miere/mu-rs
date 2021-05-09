@@ -1,24 +1,25 @@
+//! Provides abstractions for Alb Request serialization.
+
+use std::fmt::Debug;
+
 use aws_lambda_events::event::alb::AlbTargetGroupResponse;
-use serde::export::fmt::Debug;
 use serde::Serialize;
 
-use crate::alb;
-use crate::alb::response;
-use crate::lambda::LambdaError;
+use crate::response;
 
 /// Serialize ordinary structures and enums into an ALB valid response.
 pub trait AlbSerialize {
-    fn to_alb_response(&self) -> alb::Response;
+    fn to_alb_response(&self) -> AlbTargetGroupResponse;
 }
 
-impl AlbSerialize for alb::Response {
+impl AlbSerialize for AlbTargetGroupResponse {
     fn to_alb_response(&self) -> AlbTargetGroupResponse {
         self.clone()
     }
 }
 
-impl AlbSerialize for LambdaError {
-    fn to_alb_response(&self) -> alb::Response {
+impl AlbSerialize for mu_runtime::Error {
+    fn to_alb_response(&self) -> AlbTargetGroupResponse {
         let body = format!("{}", self);
         response::create_plain_text(500, Some(body))
     }
@@ -31,8 +32,8 @@ where
 {
     fn to_alb_response(&self) -> AlbTargetGroupResponse {
         match self {
-            Ok(response) => alb::response::create_json_from_obj(200, response),
-            Err(cause) => alb::response::create_plain_text(
+            Ok(response) => response::create_json_from_obj(200, response),
+            Err(cause) => response::create_plain_text(
                 500,
                 Some(format!("Internal Server Error: {:?}", cause)),
             ),
@@ -43,13 +44,12 @@ where
 #[cfg(test)]
 mod custom_serializer_tests {
     use serde::Serialize;
-
-    use crate::alb::response::*;
-
+    use crate::response::*;
     use super::*;
+    use aws_lambda_events::encodings::Body;
 
     impl AlbSerialize for User {
-        fn to_alb_response(&self) -> alb::Response {
+        fn to_alb_response(&self) -> AlbTargetGroupResponse {
             response::create_json_from_obj(200, self)
         }
     }
@@ -67,22 +67,19 @@ mod custom_serializer_tests {
 
         let response = serializable.to_alb_response();
         assert_eq!(response.status_code, 200);
-        assert_eq!(response.body.unwrap(), "{\"name\":\"John\"}".to_string());
+        assert_eq!(response.body.unwrap(), Body::Text("{\"name\":\"John\"}".to_string()));
 
         let header = response.multi_value_headers.get(headers::CONTENT_TYPE);
         assert_ne!(None, header);
-        assert_eq!(
-            &content_types::JSON.to_string(),
-            header.unwrap().get(0).unwrap()
-        );
+        assert_eq!(content_types::JSON, header.unwrap().to_str().unwrap());
     }
 }
 
 #[cfg(test)]
 mod result_object_serialization_tests {
-    use crate::lambda::RuntimeResult;
-
+    use mu_runtime::RuntimeResult;
     use super::*;
+    use aws_lambda_events::encodings::Body;
 
     #[test]
     fn should_serialize_successful_result() {
@@ -90,7 +87,7 @@ mod result_object_serialization_tests {
 
         let response = res.to_alb_response();
         assert_eq!(200, response.status_code);
-        assert_eq!("null", response.body.unwrap());
+        assert_eq!(Body::Text("null".to_string()), response.body.unwrap());
     }
 
     #[test]
@@ -100,7 +97,7 @@ mod result_object_serialization_tests {
         let response = res.to_alb_response();
         assert_eq!(500, response.status_code);
         assert_eq!(
-            "Internal Server Error: LambdaError(\"Unit Test\")",
+            Body::Text("Internal Server Error: Error(\"Unit Test\")".to_string()),
             response.body.unwrap()
         );
     }
