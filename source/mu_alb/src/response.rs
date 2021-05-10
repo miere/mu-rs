@@ -1,7 +1,9 @@
 use serde::Serialize;
 use aws_lambda_events::event::alb::AlbTargetGroupResponse as Response;
-use http::HeaderMap;
+use http::{HeaderMap, HeaderValue};
 use aws_lambda_events::encodings::Body;
+use http::header::HeaderName;
+use std::str::FromStr;
 
 /// Known content types.
 pub mod content_types {
@@ -11,15 +13,14 @@ pub mod content_types {
 
 /// Common header utilities.
 pub mod headers {
-    use http::{HeaderMap, HeaderValue};
-    use http::header::HeaderName;
-    use std::str::FromStr;
+    use std::collections::HashMap;
 
     pub const CONTENT_TYPE: &str = "Content-Type";
     pub const LOCATION: &str = "Content-Type";
+    pub type HeaderMap = HashMap<String, String>;
 
     /// Creates a single entry header for the given __header_name__ and the optional __value__ arguments.
-    pub fn create_for_optional(header_name: &str, optional_value: &Option<String>) -> HeaderMap<HeaderValue> {
+    pub fn create_for_optional(header_name: &str, optional_value: &Option<String>) -> HeaderMap {
         match optional_value {
             Some(value) => create_for(header_name, &value),
             None => Default::default(),
@@ -27,11 +28,9 @@ pub mod headers {
     }
 
     /// Creates a single entry header for the given __header_name__ and __value__ arguments.
-    pub fn create_for(header_name: &str, value: &str) -> HeaderMap<HeaderValue> {
-        let mut headers = HeaderMap::with_capacity(1);
-        let header_value = HeaderValue::from_str(value).unwrap();
-        let header_name = HeaderName::from_str(header_name).unwrap();
-        headers.insert(header_name, header_value);
+    pub fn create_for(header_name: &str, value: &str) -> HeaderMap {
+        let mut headers = HashMap::new();
+        headers.insert(header_name.to_string(), value.to_string());
         headers
     }
 }
@@ -80,11 +79,20 @@ pub fn create_with_content_type(
 pub fn create(
     status_code: i64,
     body: Option<String>,
-    multi_value_headers: HeaderMap,
+    headers: headers::HeaderMap,
 ) -> Response {
+    let mut adapted_headers = HeaderMap::with_capacity(headers.len());
+
+    for (key, value) in headers.iter() {
+        adapted_headers.insert(
+            HeaderName::from_str(key).unwrap(),
+            HeaderValue::from_str(value).unwrap()
+        );
+    }
+
     Response {
         status_code,
-        multi_value_headers,
+        multi_value_headers: adapted_headers,
         headers: HeaderMap::new(),
         is_base64_encoded: false,
         status_description: Some(format!("{} Response", status_code)),

@@ -41,6 +41,7 @@ pub async fn listen_events<F, Fut, A, B, E>(handler: F) -> RuntimeResult
           B: Serialize,
           E: StdError
 {
+    println!("Preparing to listen to events...");
     let lambda_api = LambdaApiClient::default();
     listen_events_with(lambda_api, handler).await
 }

@@ -4,7 +4,9 @@
 //!
 //! Let's say hello world?
 //! ```no_run
-//! use aws_lambda_events::event::alb::AlbTargetGroupRequest;
+//! use aws_lambda_events::event::alb::{
+//!     AlbTargetGroupRequest, AlbTargetGroupResponse
+//! };
 //! use mu_alb::*;
 //!
 //! #[tokio::main]
@@ -12,22 +14,23 @@
 //!   listen_events(|req: AlbTargetGroupRequest| say_hello()).await
 //! }
 //!
-//! async fn say_hello() -> alb::Response {
+//! async fn say_hello() -> AlbTargetGroupResponse {
 //!   response::create_plain_text(200, Some("Hello, mate".to_string()))
 //! }
 //! ```
 //!
 //! ## Centralised Serialization Mechanism
-//! One of the common questions raised when designing a serverless application is how to have
+//! One of the common converns raised when designing a serverless application is how to have
 //! a consistent response serialization that can shared across different lambda functions. This
-//! is especially true when developing HTTP endpoints, where you might have different successful
+//! is especially true when developing HTTP endpoints where you might have different successful
 //! response types, but shared error types.
 //!
-//! By creating your own `mu::alb::Serialize` implementation, as below exemplified, you can
+//! By creating your own [mu_alb::AlbSerialize] implementation, as below exemplified, you can
 //! globally define how a given object will be sent as a response to the AWS Application Load Balancer.
 //!
 //! ```no_run
-//! use mu_alb::*;
+//! use aws_lambda_events::event::alb::AlbTargetGroupResponse;
+//! use mu_alb;
 //! use serde::Serialize;
 //!
 //! enum MyResponses<T> {
@@ -36,14 +39,14 @@
 //!     BadRequest
 //! }
 //!
-//! impl<T> alb::Serialize for MyResponses<T>
+//! impl<T> mu_alb::AlbSerialize for MyResponses<T>
 //!     where T: Serialize {
 //!
-//!     fn to_alb_response(&self) -> alb::Response {
+//!     fn to_alb_response(&self) -> AlbTargetGroupResponse {
 //!         match self {
-//!             MyResponses::Success(msg) => alb::response::create_json_from_obj(200, msg),
-//!             MyResponses::NoContent => alb::response::create_plain_text(204, None),
-//!             MyResponses::BadRequest => alb::response::create_plain_text(400, None)
+//!             MyResponses::Success(msg) => mu_alb::response::create_json_from_obj(200, msg),
+//!             MyResponses::NoContent => mu_alb::response::create_plain_text(204, None),
+//!             MyResponses::BadRequest => mu_alb::response::create_plain_text(400, None)
 //!         }
 //!     }
 //! }
@@ -61,7 +64,7 @@
 //! struct EmptyPayload {}
 //!
 //! impl AlbDeserialize<EmptyPayload> for EmptyPayload {
-//!     fn from_alb_request(req: AlbTargetGroupRequest, ctx: lambda::Context) -> Result<EmptyPayload, Error> {
+//!     fn from_alb_request(req: AlbTargetGroupRequest, ctx: Context) -> Result<EmptyPayload, Error> {
 //!         match req.body {
 //!             None => Ok(EmptyPayload {}),
 //!             Some(_) => Err("Unexpected payload".into())
