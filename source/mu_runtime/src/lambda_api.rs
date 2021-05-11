@@ -1,3 +1,4 @@
+//! The communication layer for the internal AWS Lambda API
 use std::env;
 
 use hyper::{Body, HeaderMap, Request};
@@ -9,8 +10,9 @@ use crate::error::Error as LambdaApiError;
 use crate::model::{Config, Context};
 
 /// The Lambda Api Client. Abstracts the communication with the internal
-/// Lambda Runtime rest API, as documented here:
-/// https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html
+/// Lambda Runtime rest API, as documented [here].
+///
+/// [here]: https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html
 pub struct LambdaApiClient {
     client: Client<HttpConnector, Body>,
     config: Config

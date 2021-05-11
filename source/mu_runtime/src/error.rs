@@ -1,3 +1,4 @@
+//! Common error scenarios handled by this crate.
 use std::fmt::Formatter;
 
 /// Represents possible errors that might happen during the Lambda

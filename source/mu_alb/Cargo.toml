@@ -1,8 +1,14 @@
 [package]
 name = "mu_alb"
+description = "Alternative AWS Lambda Runtime designed to listen ALB HTTP requests"
 version = "0.2.0"
-authors = ["Miere Teixeira <miere@securecodewarrior.com>"]
 edition = "2018"
+license = "Apache-2.0"
+repository = "https://github.com/miere/mu-rs"
+categories = ["web-programming::http-server"]
+keywords = ["AWS", "Lambda", "API"]
+authors = ["Miere Teixeira <miere.teixeira@gmail.com>"]
+readme = "../../README.md"
 
 [lib]
 

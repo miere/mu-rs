@@ -1,4 +1,4 @@
-//! An AWS Application Load Balancer abstraction to handle Http requests with AWS Lambda.
+//! An abstraction to handle Http requests coming from the AWS Application Load Balancer.
 //! Being designed with correctness and robustness in mind, it covers more complex scenarios
 //! by default - like Http Error handling and customizable serialization mechanism.
 //!
@@ -25,7 +25,7 @@
 //! is especially true when developing HTTP endpoints where you might have different successful
 //! response types, but shared error types.
 //!
-//! By creating your own [mu_alb::AlbSerialize] implementation, as below exemplified, you can
+//! By creating your own [crate::AlbSerialize] implementation, as below exemplified, you can
 //! globally define how a given object will be sent as a response to the AWS Application Load Balancer.
 //!
 //! ```no_run
@@ -54,7 +54,7 @@
 //!
 //! ## Custom Request Deserialization
 //! It is also possible to replace the [aws_lambda_events::event::alb::AlbTargetGroupRequest] type
-//! by our custom type in the listener function, it might be convenient for desiging RPC
+//! with your custom type in the listener function, it might be convenient when desiging RPC
 //! request-style APIs.
 //!
 //! ```no_run
@@ -88,8 +88,9 @@
 //!
 //! ## Features
 //! - `multi_header`: enables support to multi-value headers and query strings.
-//!    For more on that check the official AWS documentation about this topic.
-//!    https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers
+//!    For more on that check the official [AWS documentation about this
+//!    topic](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers).
+//!
 
 // Internal modules are public, so people can use it whenever it makes sense.
 pub mod deserializer;

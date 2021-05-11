@@ -1,3 +1,7 @@
+//! The AWS Runtime entrypoint of this crate. It contains all needed
+//! implementation to bridge the communication between the [Lambda API](crate::lambda_api)
+//! and the event listener.
+
 use std::error::Error as StdError;
 use std::future::Future;
 use std::result::Result as StdResult;
@@ -12,12 +16,13 @@ use crate::model::Context;
 pub type RuntimeResult = StdResult<(), Error>;
 
 /// Listen to AWS Lambda events and delegates the received payload to
-/// the [handler] function.
+/// the `handler` function.
 ///
-/// It is expected that the [handler] functions follows the contract
-/// `Fn(A) -> Future<Output=Result<B, E>>` where both [A] and [B] types
+/// It is expected that the `handler` functions follows the contract
+/// `Fn(A, Context) -> Future<Output=Result<B, E>>` where both `A` and `B` types
 /// are expected to be Serde deserializable and serializable, respectively.
-/// The [E] type can be any valid error type.
+/// The `E` type can be any valid type that implements the [`std::error::Error`]
+/// trait.
 ///
 /// ```no_run
 /// use aws_lambda_events::event::sqs::SqsEvent;
@@ -47,7 +52,7 @@ pub async fn listen_events<F, Fut, A, B, E>(handler: F) -> RuntimeResult
 }
 
 /// Listen to AWS Lambda events and delegates the received payload to
-/// the [handler] function. This method allows one to define the LambdaApi
+/// the `handler` function. This method allows one to define the LambdaApi
 /// instance that will be used in the Lambda-consumption mainloop. This
 /// might be desirable for local testing.
 #[inline]
