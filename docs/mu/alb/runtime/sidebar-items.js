@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["listen_events","Listen to ALB events. Unlike mu::lambda::listen_events, this method expects you to respect the AWS Application Load Balancer contract by returning the appropriate response (defined by mu::alb::Response)."]]});

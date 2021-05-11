@@ -1,3 +1,0 @@
-(function() {var implementors = {};
-implementors["mu"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"struct\" href=\"mu/lambda/struct.LambdaError.html\" title=\"struct mu::lambda::LambdaError\">LambdaError</a>","synthetic":false,"types":["mu::lambda::LambdaError"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
