@@ -2,14 +2,6 @@
 A minimalistic AWS Lambda runtime. It was written based on the official `lambda_runtime` and
 was designed to be used along with the trustworthy `aws_lambda_event` crate.
 
-## Why another runtime?
-The official AWS Lambda Runtime is awesome, very well crafted and has battle-tested by several developers
-in the past few years. It is known, though, that it has a [slow development 
-pace](https://github.com/awslabs/aws-lambda-rust-runtime/issues/274) - where PR and tickets
-being left months until receive proper attention. The so waited release of the 0.3.0 version also
-introduced [extra complexities on its default API](https://github.com/awslabs/aws-lambda-rust-runtime/issues/310),
-making it more verbose and less developer friendly.
-
 The main goal of μ-rs is to provide an easy-to-use api for AWS Serverless Developers,
 leveraging enterprise-grade semantics in the powerful Rust ecosystem.
 
