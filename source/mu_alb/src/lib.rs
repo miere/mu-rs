@@ -15,7 +15,7 @@
 //! }
 //!
 //! async fn say_hello() -> AlbTargetGroupResponse {
-//!   response::create_plain_text(200, Some("Hello, mate".to_string()))
+//!   response::create_as_plain_text(200, Some("Hello, mate".to_string()))
 //! }
 //! ```
 //!
@@ -45,8 +45,8 @@
 //!     fn to_alb_response(&self) -> AlbTargetGroupResponse {
 //!         match self {
 //!             MyResponses::Success(msg) => mu_alb::response::create_json_from_obj(200, msg),
-//!             MyResponses::NoContent => mu_alb::response::create_plain_text(204, None),
-//!             MyResponses::BadRequest => mu_alb::response::create_plain_text(400, None)
+//!             MyResponses::NoContent => mu_alb::response::create_as_plain_text(204, None),
+//!             MyResponses::BadRequest => mu_alb::response::create_as_plain_text(400, None)
 //!         }
 //!     }
 //! }
@@ -85,6 +85,11 @@
 //! // TODO: turn this into a derive macro
 //! impl RpcRequest for EmptyPayload {}
 //! ```
+//!
+//! ## Features
+//! - `multi_header`: enables support to multi-value headers and query strings.
+//!    For more on that check the official AWS documentation about this topic.
+//!    https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html#multi-value-headers
 
 // Internal modules are public, so people can use it whenever it makes sense.
 pub mod deserializer;

@@ -30,7 +30,7 @@ use crate::{response, AlbSerialize};
 /// }
 ///
 /// async fn say_hello() -> AlbTargetGroupResponse {
-///  response::create_plain_text(
+///  response::create_as_plain_text(
 ///    200, Some("Hello World".to_string()))
 /// }
 /// ```
@@ -62,7 +62,7 @@ where
     let result: Result<A, Error> = A::from_alb_request(req, ctx);
     Ok(match result {
         Ok(deserialized) => (func)(deserialized).await.to_alb_response(),
-        Err(cause) => response::create_plain_text(
+        Err(cause) => response::create_as_plain_text(
             400, Some(format!("Bad Request {}", cause))
         ),
     })

@@ -21,7 +21,7 @@ impl AlbSerialize for AlbTargetGroupResponse {
 impl AlbSerialize for mu_runtime::Error {
     fn to_alb_response(&self) -> AlbTargetGroupResponse {
         let body = format!("{}", self);
-        response::create_plain_text(500, Some(body))
+        response::create_as_plain_text(500, Some(body))
     }
 }
 
@@ -33,7 +33,7 @@ where
     fn to_alb_response(&self) -> AlbTargetGroupResponse {
         match self {
             Ok(response) => response::create_json_from_obj(200, response),
-            Err(cause) => response::create_plain_text(
+            Err(cause) => response::create_as_plain_text(
                 500,
                 Some(format!("Internal Server Error: {:?}", cause)),
             ),
@@ -60,6 +60,7 @@ mod custom_serializer_tests {
     }
 
     #[test]
+    #[cfg(feature = "multi_header")]
     fn should_convert_into_alb_response() {
         let serializable = User {
             name: String::from("John"),
@@ -70,6 +71,22 @@ mod custom_serializer_tests {
         assert_eq!(response.body.unwrap(), Body::Text("{\"name\":\"John\"}".to_string()));
 
         let header = response.multi_value_headers.get(headers::CONTENT_TYPE);
+        assert_ne!(None, header);
+        assert_eq!(content_types::JSON, header.unwrap().to_str().unwrap());
+    }
+
+    #[test]
+    #[cfg(not(feature = "multi_header"))]
+    fn should_convert_into_alb_response() {
+        let serializable = User {
+            name: String::from("John"),
+        };
+
+        let response = serializable.to_alb_response();
+        assert_eq!(response.status_code, 200);
+        assert_eq!(response.body.unwrap(), Body::Text("{\"name\":\"John\"}".to_string()));
+
+        let header = response.headers.get(headers::CONTENT_TYPE);
         assert_ne!(None, header);
         assert_eq!(content_types::JSON, header.unwrap().to_str().unwrap());
     }
