@@ -171,8 +171,13 @@ mod tests {
             });
 
             let result = api.fetch_next_message().await;
-            let expected = Err("error trying to connect: tcp connect error: Connection refused (os error 61)".into());
-            assert_eq!(expected, result)
+            match result {
+                Ok(_) => panic!("Should not succeed in case of failures"),
+                Err(cause) => {
+                    let error_msg = format!("{}", cause);
+                    assert!(error_msg.starts_with("error trying to connect: tcp connect error: Connection refused"))
+                }
+            }
         }
 
         #[tokio::test]
@@ -312,8 +317,13 @@ mod tests {
             });
 
             let result = api.publish_response("0000-0001".to_string(), "42".to_string()).await;
-            let expected = Err("error trying to connect: tcp connect error: Connection refused (os error 61)".into());
-            assert_eq!(expected, result)
+            match result {
+                Ok(_) => panic!("Should not succeed in case of failures"),
+                Err(cause) => {
+                    let error_msg = format!("{}", cause);
+                    assert!(error_msg.starts_with("error trying to connect: tcp connect error: Connection refused"))
+                }
+            }
         }
 
         #[tokio::test]
@@ -362,8 +372,13 @@ mod tests {
                     error_message: "Not implemented".to_string()
                 }).await;
 
-            let expected = Err("error trying to connect: tcp connect error: Connection refused (os error 61)".into());
-            assert_eq!(expected, result)
+            match result {
+                Ok(_) => panic!("Should not succeed in case of failures"),
+                Err(cause) => {
+                    let error_msg = format!("{}", cause);
+                    assert!(error_msg.starts_with("error trying to connect: tcp connect error: Connection refused"))
+                }
+            }
         }
 
         #[tokio::test]
