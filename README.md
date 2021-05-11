@@ -1,30 +1,52 @@
 # μ-rs
-A robust, but lightweight, AWS Lambda Runtime for Rust.
+A minimalistic AWS Lambda runtime. It was written based on the official `lambda_runtime` and
+was designed to be used along with the trustworthy `aws_lambda_event` crate.
 
-## Overview
-A wrapper merging the official `lambda_runtime` and the trustworthy `aws_lambda_event`
-crate. The idea behind μ-rs is to provide an easy-to-use api for AWS Serverless Developers,
+## Why another runtime?
+The official AWS Lambda Runtime is awesome, very well crafted and has battle-tested by several developers
+in the past few years. It is known, though, that it has a [slow development 
+pace](https://github.com/awslabs/aws-lambda-rust-runtime/issues/274) - where PR and tickets
+being left months until receive proper attention. The so waited release of the 0.3.0 version also
+introduced [extra complexities on its default API](https://github.com/awslabs/aws-lambda-rust-runtime/issues/310),
+making it more verbose and less developer friendly.
+
+The main goal of μ-rs is to provide an easy-to-use api for AWS Serverless Developers,
 leveraging enterprise-grade semantics in the powerful Rust ecosystem.
 
-The current state of the official AWS Lambda Runtime for Rust
-provides a good base for developers to runtime simple lambda functions, but when it comes to
-maintaining a bigger code base, the development experience is not so pleasant. It is especially
-true if you need to share state between sub-sequent Lambda requests (e.g. Database Connection
-Pools). μ-rs takes advantage of the official `lambda_runtime`, providing a consistent API
-to leverage Lambda development, with especial attention to HTTP Requests. 
-
-## Usage
 > **Disclaimer**:
 This crate has been developed on the best effort from its authors. Although quite useful as being
 > presented, it still on its early stages of development.
 
-As this crate relies on the most recent version of the `lambda_runtime` it hasn't being published
-to crates.io yet, you need to use Git reference to set up a project using μ-rs.
+## Acknowledgement
+Although initially this library used to depend on the (official) `lambda_runtime` crate, ever
+since the 0.2.0 it's not being the case anymore. The current codebase was deeply inspired on
+the official one though, having its code base deeply simplified. It is still possible to
+see a resemblances between these two crates, though. In the case this library proves useful,
+it can be back-ported to the upstream repository.
 
+## Usage
+Set up the dependency.
 ```toml
-[dependencies.mu]
-git = "https://github.com/miere/mu-rs"
-tag = "0.1.0"
+[dependencies]
+mu="0.2.0"
+```
+Start listen to events on your Lambda functions.
+```rust
+// Sample lambda function that listen for SQS events.
+use aws_lambda_events::event::sqs::SqsEvent;
+use mu;
+
+#[tokio::main]
+async fn main() -> mu::RuntimeResult {
+  mu::listen_events(|sqs_events, ctx| {
+    handle_sqs_messages(sqs_events)
+  }).await
+}
+
+async fn handle_sqs_messages(sqs_events: SqsEvent) -> Result<(), mu::Error> {
+  println!("Received {} events", sqs_events.records.len());
+  Ok(())
+}
 ```
 
 ## Documentation
@@ -60,7 +82,6 @@ To send us a pull request, please:
 
 GitHub provides additional document on [forking a repository](https://help.github.com/articles/fork-a-repo/) and
 [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
-
 
 ## Finding contributions to work on
 Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels ((enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any 'help wanted' issues is a great place to start.

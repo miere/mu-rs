@@ -1,0 +1,72 @@
+{
+  "requestContext": {
+    "elb": {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-west-2:140868587617:targetgroup/events-list-live/b20a2a8c23a30ff9"
+    }
+  },
+  "httpMethod": "GET",
+  "path": "/api/events/live/list",
+  "headers": {},
+  "multiValueQueryStringParameters": {},
+  "multiValueHeaders": {
+    "accept": [
+      "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
+    ],
+    "accept-encoding": [
+      "gzip, deflate, br"
+    ],
+    "accept-language": [
+      "en-GB,en-US;q=0.9,en;q=0.8"
+    ],
+    "cache-control": [
+      "max-age=0"
+    ],
+    "host": [
+      "app.betscore.live"
+    ],
+    "sec-fetch-dest": [
+      "document"
+    ],
+    "sec-fetch-mode": [
+      "navigate"
+    ],
+    "sec-fetch-site": [
+      "cross-site"
+    ],
+    "sec-fetch-user": [
+      "?1"
+    ],
+    "sec-gpc": [
+      "1"
+    ],
+    "upgrade-insecure-requests": [
+      "1"
+    ],
+    "user-agent": [
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36"
+    ],
+    "x-amzn-oidc-accesstoken": [
+      "GtAUcDrj6HfyqKyddICOYjbqai1fbYjv"
+    ],
+    "x-amzn-oidc-data": [
+      "eyJ0eXAiOiJKV1QiLCJraWQiOiI4NjMyMmQ1My1jMjkxLTRkYTEtOTdiMi00NGRhZTY0YmM4NmQiLCJhbGciOiJFUzI1NiIsImlzcyI6Imh0dHBzOi8vYmV0c2NvcmUuZXUuYXV0aDAuY29tLyIsImNsaWVudCI6ImJCUW8wZDNhSUNpRWVjQ0tUZEt2ZGRhS3BZcTEzcGdkIiwic2lnbmVyIjoiYXJuOmF3czplbGFzdGljbG9hZGJhbGFuY2luZzp1cy13ZXN0LTI6MTQwODY4NTg3NjE3OmxvYWRiYWxhbmNlci9hcHAvYmV0c2NvcmUtYXBpLXByb2QvMDAxOGUxNGI0OGZkNmZkYSIsImV4cCI6MTYyMDYzMjIzNX0=.eyJzdWIiOiJnb29nbGUtb2F1dGgyfDEwNzAwNjc2MjYwMDIwMTExODAwMiIsImV4cCI6MTYyMDYzMjIzNSwiaXNzIjoiaHR0cHM6Ly9iZXRzY29yZS5ldS5hdXRoMC5jb20vIn0=.Hi9j4svfEDgtkFFi70ZNxoMN80gCWYky3yJoH2GNAPiuUtPmRXzdDMPmbkTzLYTJDlMBKK6niRPg-AQpOgXNew=="
+    ],
+    "x-amzn-oidc-identity": [
+      "google-oauth2|107006762600201118002"
+    ],
+    "x-amzn-trace-id": [
+      "Root=1-6098e233-3954de7d7d5907870e5fafb1"
+    ],
+    "x-forwarded-for": [
+      "122.107.221.6"
+    ],
+    "x-forwarded-port": [
+      "443"
+    ],
+    "x-forwarded-proto": [
+      "https"
+    ]
+  },
+  "body": "",
+  "isBase64Encoded": false
+}
