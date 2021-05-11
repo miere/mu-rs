@@ -28,29 +28,29 @@ it can be back-ported to the upstream repository.
 Set up the dependency.
 ```toml
 [dependencies]
-mu="0.2.0"
+mu_runtime="0.2.0"
 ```
 Start listen to events on your Lambda functions.
 ```rust
 // Sample lambda function that listen for SQS events.
 use aws_lambda_events::event::sqs::SqsEvent;
-use mu;
+use mu_runtime;
 
 #[tokio::main]
-async fn main() -> mu::RuntimeResult {
-  mu::listen_events(|sqs_events, ctx| {
+async fn main() -> mu_runtime::RuntimeResult {
+  mu_runtime::listen_events(|sqs_events, ctx| {
     handle_sqs_messages(sqs_events)
   }).await
 }
 
-async fn handle_sqs_messages(sqs_events: SqsEvent) -> Result<(), mu::Error> {
+async fn handle_sqs_messages(sqs_events: SqsEvent) -> Result<(), mu_runtime::Error> {
   println!("Received {} events", sqs_events.records.len());
   Ok(())
 }
 ```
 
 ## Documentation
-- [Crate documentation](https://miere.github.io/mu-rs/)
+- [Crate documentation](https://docs.rs/mu_runtime/)
 
 ## Reporting Bugs/Feature Requests
 We welcome you to use the GitHub issue tracker to report bugs or suggest features.
